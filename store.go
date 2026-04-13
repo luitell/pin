@@ -55,14 +55,14 @@ func (s *Store) GetTasks() ([]Task, error) {
 	return tasks, nil
 }
 
-func (s *Store) SaveTask(title, description string) error {
+func (s *Store) SaveTask(title, description string) (Task, error) {
 	insertQuery := `
 	INSERT INTO tasks(title,description)
 	VALUES(?,?)
 	`
 	if _, err := s.conn.Exec(insertQuery, title, description); err != nil {
-		return err
+		return Task{}, err
 	}
 
-	return nil
+	return Task{Title: title, Description: description}, nil
 }
