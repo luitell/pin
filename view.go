@@ -7,7 +7,11 @@ func (m model) View() tea.View {
 	switch m.viewState {
 	case listView:
 		for _, task := range m.tasks {
-			s += task.Title + "\n\n"
+			s += task.Title
+			if task.Description != "" {
+				s += "\n" + task.Description
+			}
+			s += "\n\n"
 		}
 	case createView:
 		s += "Task Title\n:"
