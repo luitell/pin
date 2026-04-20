@@ -5,7 +5,7 @@ A simple CLI tool to track your tasks like a notice board.
 ## Features
 
 - Add tasks quickly
-- View all pinned tasks
+- View all tasks
 - Mark tasks as done
 - Remove tasks
 
