@@ -6,7 +6,10 @@ func (m model) View() tea.View {
 	s := "Welcome to ping\n\n"
 	switch m.viewState {
 	case listView:
-		for _, task := range m.tasks {
+		for index, task := range m.tasks {
+			if index == m.activeIndex {
+				s += "> "
+			}
 			s += task.Title
 			if task.Description != "" {
 				s += "\n" + task.Description

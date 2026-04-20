@@ -18,6 +18,7 @@ type model struct {
 	width       int
 	height      int
 	activeField int
+	activeIndex int
 	store       *Store
 	tasks       []Task
 	titleField  textinput.Model
@@ -36,6 +37,7 @@ func NewModel(store *Store) model {
 		titleField:  textinput.New(),
 		bodyField:   textinput.New(),
 		activeField: 0,
+		activeIndex: 0,
 	}
 }
 
@@ -49,12 +51,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds []tea.Cmd
 	)
 
-	m.titleField, cmd = m.titleField.Update(msg)
-	cmds = append(cmds, cmd)
-
-	m.bodyField, cmd = m.bodyField.Update(msg)
-
-	cmds = append(cmds, cmd)
+	if m.viewState == createView {
+		switch m.activeField {
+		case 0:
+			m.titleField, cmd = m.titleField.Update(msg)
+			cmds = append(cmds, cmd)
+		case 1:
+			m.bodyField, cmd = m.bodyField.Update(msg)
+			cmds = append(cmds, cmd)
+		}
+	}
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -79,9 +85,35 @@ func ListViewActions(key string, m model) (tea.Model, tea.Cmd) {
 
 	case "a":
 		m.titleField.Focus()
+		m.activeField = 0
 		m.viewState = createView
 		return m, nil
+
+	case "d":
+
+		task := m.tasks[m.activeIndex]
+		err := m.store.DeleteTask(int(task.ID))
+		if err != nil {
+			log.Fatal(err)
+		}
+		m.tasks = append(m.tasks[:m.activeIndex], m.tasks[m.activeIndex+1:]...)
+		if m.activeIndex > len(m.tasks)-1 {
+			m.activeIndex = len(m.tasks) - 1
+		}
+
+		return m, nil
+	case "j":
+		if m.activeIndex < len(m.tasks)-1 {
+			m.activeIndex += 1
+			return m, nil
+		}
+	case "k":
+		if m.activeIndex > 0 {
+			m.activeIndex -= 1
+			return m, nil
+		}
 	}
+
 	return m, nil
 }
 
@@ -93,6 +125,13 @@ func CreateViewActions(key string, m model) (tea.Model, tea.Cmd) {
 	case "esc":
 		m.viewState = listView
 		return m, nil
+
+	case "tab":
+		if m.activeField < 1 {
+			m = switchField(m, m.activeField+1)
+		} else if m.activeField > 0 {
+			m = switchField(m, m.activeField-1)
+		}
 
 	case "enter":
 		if m.activeField == 0 {

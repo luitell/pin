@@ -66,3 +66,15 @@ func (s *Store) SaveTask(title, description string) (Task, error) {
 
 	return Task{Title: title, Description: description}, nil
 }
+
+func (s *Store) DeleteTask(taskID int) error {
+	deleteQuery := `
+	DELETE FROM tasks
+	WHERE id=?
+	`
+	if _, err := s.conn.Exec(deleteQuery, taskID); err != nil {
+		return err
+	}
+
+	return nil
+}
