@@ -84,8 +84,9 @@ func ListViewActions(key string, m model) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 
 	case "a":
-		m.titleField.Focus()
-		m.activeField = 0
+		m.titleField.SetValue("")
+		m.bodyField.SetValue("")
+		m = switchField(m, 0)
 		m.viewState = createView
 		return m, nil
 
@@ -135,13 +136,10 @@ func CreateViewActions(key string, m model) (tea.Model, tea.Cmd) {
 
 	case "enter":
 		if m.activeField == 0 {
-			// Move from title → body
 			if m.titleField.Value() == "" {
-				return m, nil // don't proceed if title empty
+				return m, nil
 			}
-			m.activeField = 1
-			m.bodyField.Focus()
-			m.titleField.Blur()
+			m = switchField(m, 1)
 			return m, nil
 		}
 
@@ -155,7 +153,9 @@ func CreateViewActions(key string, m model) (tea.Model, tea.Cmd) {
 		}
 
 		m.tasks = append(m.tasks, task)
-
+		if m.activeField == -1 {
+			m.activeField = 0
+		}
 		// Reset fields
 		m.titleField.SetValue("")
 		m.bodyField.SetValue("")

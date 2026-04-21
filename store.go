@@ -60,11 +60,16 @@ func (s *Store) SaveTask(title, description string) (Task, error) {
 	INSERT INTO tasks(title,description)
 	VALUES(?,?)
 	`
-	if _, err := s.conn.Exec(insertQuery, title, description); err != nil {
+	res, err := s.conn.Exec(insertQuery, title, description)
+	if err != nil {
+		return Task{}, err
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
 		return Task{}, err
 	}
 
-	return Task{Title: title, Description: description}, nil
+	return Task{ID: id, Title: title, Description: description}, nil
 }
 
 func (s *Store) DeleteTask(taskID int) error {

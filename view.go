@@ -3,7 +3,7 @@ package main
 import tea "charm.land/bubbletea/v2"
 
 func (m model) View() tea.View {
-	s := "Welcome to ping\n\n"
+	s := "Welcome to pin\n\n"
 	switch m.viewState {
 	case listView:
 		for index, task := range m.tasks {
