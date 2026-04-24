@@ -64,8 +64,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.height = msg.Width
-		m.width = msg.Height
+		m.height = msg.Height
+		m.width = msg.Width
 	case tea.KeyPressMsg:
 		key := msg.String()
 		switch m.viewState {
@@ -76,93 +76,4 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	return m, tea.Batch(cmds...)
-}
-
-func ListViewActions(key string, m model) (tea.Model, tea.Cmd) {
-	switch key {
-	case "q", "ctrl+c":
-		return m, tea.Quit
-
-	case "a":
-		m.titleField.SetValue("")
-		m.bodyField.SetValue("")
-		m = switchField(m, 0)
-		m.viewState = createView
-		return m, nil
-
-	case "d":
-
-		task := m.tasks[m.activeIndex]
-		err := m.store.DeleteTask(int(task.ID))
-		if err != nil {
-			log.Fatal(err)
-		}
-		m.tasks = append(m.tasks[:m.activeIndex], m.tasks[m.activeIndex+1:]...)
-		if m.activeIndex > len(m.tasks)-1 {
-			m.activeIndex = len(m.tasks) - 1
-		}
-
-		return m, nil
-	case "j":
-		if m.activeIndex < len(m.tasks)-1 {
-			m.activeIndex += 1
-			return m, nil
-		}
-	case "k":
-		if m.activeIndex > 0 {
-			m.activeIndex -= 1
-			return m, nil
-		}
-	}
-
-	return m, nil
-}
-
-func CreateViewActions(key string, m model) (tea.Model, tea.Cmd) {
-	switch key {
-	case "q", "ctrl+c":
-		return m, tea.Quit
-
-	case "esc":
-		m.viewState = listView
-		return m, nil
-
-	case "tab":
-		if m.activeField < 1 {
-			m = switchField(m, m.activeField+1)
-		} else if m.activeField > 0 {
-			m = switchField(m, m.activeField-1)
-		}
-
-	case "enter":
-		if m.activeField == 0 {
-			if m.titleField.Value() == "" {
-				return m, nil
-			}
-			m = switchField(m, 1)
-			return m, nil
-		}
-
-		// Submit when on body field
-		title := m.titleField.Value()
-		body := m.bodyField.Value()
-
-		task, err := m.store.SaveTask(title, body)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		m.tasks = append(m.tasks, task)
-		if m.activeField == -1 {
-			m.activeField = 0
-		}
-		// Reset fields
-		m.titleField.SetValue("")
-		m.bodyField.SetValue("")
-		m.activeField = 0
-
-		m.viewState = listView
-		return m, nil
-	}
-	return m, nil
 }
